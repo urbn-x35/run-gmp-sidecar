@@ -51,6 +51,7 @@ require (
 require (
 	github.com/prometheus/common v0.60.1
 	go.opentelemetry.io/collector/component/componentstatus v0.113.0
+	go.opentelemetry.io/collector/config/confighttp v0.113.0
 	go.opentelemetry.io/collector/confmap/provider/envprovider v1.19.0
 	go.opentelemetry.io/collector/confmap/provider/httpprovider v1.19.0
 	go.opentelemetry.io/collector/confmap/provider/httpsprovider v1.17.0
@@ -144,7 +145,6 @@ require (
 	go.opentelemetry.io/collector/config/configauth v0.113.0 // indirect
 	go.opentelemetry.io/collector/config/configcompression v1.19.0 // indirect
 	go.opentelemetry.io/collector/config/configgrpc v0.113.0 // indirect
-	go.opentelemetry.io/collector/config/confighttp v0.113.0 // indirect
 	go.opentelemetry.io/collector/config/confignet v1.19.0 // indirect
 	go.opentelemetry.io/collector/config/configopaque v1.19.0 // indirect
 	go.opentelemetry.io/collector/config/configretry v1.19.0 // indirect

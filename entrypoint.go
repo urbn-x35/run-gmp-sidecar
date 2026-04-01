@@ -32,12 +32,35 @@ import (
 // Create channel to listen for signals.
 var signalChan chan (os.Signal) = make(chan os.Signal, 1)
 var userConfigFile = "/etc/rungmp/config.yaml"
-var otelConfigFile = "/run/rungmp/otel.yaml"
+var otelConfigFile = getOtelConfigPath()
 var configRefreshInterval = 20 * time.Second
 var selfMetricsPort = 0
 var livenessProbePort = 13133
 var livenessProbePath = "/liveness"
 var delayLivenessProbe = 5 * time.Second
+
+// getOtelConfigPath returns a writable path for the OTel config file
+func getOtelConfigPath() string {
+	// Try Cloud Run path first
+	if _, err := os.Stat("/run"); err == nil {
+		// Check if /run is writable
+		if testFile := "/run/test_write"; func() bool {
+			f, err := os.Create(testFile)
+			if err != nil {
+				return false
+			}
+			f.Close()
+			os.Remove(testFile)
+			return true
+		}() {
+			return "/run/rungmp/otel.yaml"
+		}
+	}
+	
+	// Fallback to temp directory for local testing
+	tmpDir := os.TempDir()
+	return filepath.Join(tmpDir, "rungmp", "otel.yaml")
+}
 
 func getRawUserConfig(userConfigFile string) (string, error) {
 	_, err := os.Stat(userConfigFile)

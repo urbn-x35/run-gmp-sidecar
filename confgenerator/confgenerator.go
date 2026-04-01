@@ -23,7 +23,6 @@ import (
 
 // GenerateOtelConfig generates the complete collector config including the agent self metrics.
 func (rc *RunMonitoringConfig) GenerateOtelConfig(ctx context.Context, selfMetricsPort int) (string, error) {
-	userAgent, _ := UserAgent("Google-Cloud-Run-GMP-Sidecar", "run-gmp", Version)
 	metricVersionLabel, _ := VersionLabel("run-gmp-sidecar")
 	receiverPipelines := make(map[string]otel.ReceiverPipeline)
 	sidecarPipeline, err := rc.OTelReceiverPipeline()
@@ -41,7 +40,7 @@ func (rc *RunMonitoringConfig) GenerateOtelConfig(ctx context.Context, selfMetri
 
 	otelConfig, err := otel.ModularConfig{
 		ReceiverPipelines: receiverPipelines,
-		Exporter:          googleManagedPrometheusExporter(userAgent),
+		Exporter:          newRelicExporter(),
 		SelfMetricsPort:   selfMetricsPort,
 	}.Generate()
 	if err != nil {
@@ -59,6 +58,26 @@ func googleManagedPrometheusExporter(userAgent string) otel.Component {
 			// style suffixes to metric names, e.g., `_total` for a counter; set to false to collect metrics as is
 			"metric": map[string]interface{}{
 				"add_metric_suffixes": false,
+			},
+		},
+	}
+}
+
+func newRelicExporter() otel.Component {
+	return otel.Component{
+		Type: "newrelic",
+		Config: map[string]interface{}{
+			"api_key": "${NEW_RELIC_API_KEY}",
+			"timeout": "60s",
+			"sending_queue": map[string]interface{}{
+				"enabled":      true,
+				"num_consumers": 2,
+				"queue_size":    5,
+			},
+			"common_attributes": map[string]interface{}{
+				"service.name":              "${SERVICE_NAME}",
+				"service.version":           "${SERVICE_VERSION}",
+				"deployment.environment":    "${ENVIRONMENT}",
 			},
 		},
 	}
